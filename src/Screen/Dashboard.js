@@ -6,12 +6,14 @@ import { Styles } from '../Styles';
 import axios from 'axios'
 import {connect} from 'react-redux'
 import AsyncStorage from '@react-native-community/async-storage'
+import {Loading} from '../common/Loading'
 
 class Dashboard extends Component {
 
     state={
 
-        CrypotoCurrenydata:[]
+        CrypotoCurrenydata:[],
+        loading: false,
     }
 
 
@@ -23,7 +25,9 @@ class Dashboard extends Component {
     console.log("will mount", this.props.SavedData.data );
 
     if (this.props.SavedData.data !=''){
-       this.state.CrypotoCurrenydata.push(this.props.SavedData.data)     
+       this.state.CrypotoCurrenydata.push(this.props.SavedData.data)   
+       
+       this.setState({loading:false})
        
     //    AsyncStorage.setItem('user', JSON.stringify(this.myData))
 
@@ -53,6 +57,8 @@ class Dashboard extends Component {
        // console.log('asyncdata',AsyncStorage.getItem('Cryptodata'))
         return (
             <View>
+
+
                 <SafeAreaView style={{ backgroundColor: BlueColor }}>
                     <StatusBar backgroundColor={appColor} barStyle="light-content" />
                     <View style={{ flexDirection: 'row', height: HeaderHeigth, alignItems: 'center' }}>
@@ -65,7 +71,6 @@ class Dashboard extends Component {
                         </View>
                     </View>
                 </SafeAreaView>
-
 <View style={{margin:15*ratio}}/>
                 <FlatList
                         showsHorizontalScrollIndicator={false}

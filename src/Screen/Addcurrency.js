@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import { View, SafeAreaView, StatusBar, Text, TouchableOpacity, TextInput } from 'react-native';
-import { appColor, HeaderHeigth, blackColor, newColour, BlueColor, ratio, fontGrey, fontLight, appYellow, width, height } from '../constent';
+import { View, FlatList,Animated,SafeAreaView, StatusBar, Text, TouchableOpacity, TextInput } from 'react-native';
+import { appColor, HeaderHeigth, fontBlack,blackColor, newColour, BlueColor, ratio, fontGrey, fontLight, appYellow, width, height } from '../constent';
 import { Styles } from '../Styles';
 import { connect } from 'react-redux'
 import { fetchsavedata, fetchData } from '../redux/actions'
 import SimpleToast from 'react-native-simple-toast';
 //import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
+import {Loading} from '../common/Loading'
+
 
 class Addcurrency extends Component {
 
@@ -17,6 +19,10 @@ class Addcurrency extends Component {
         cryptoname: 'Bitcoin',
         obj: {},
         search: '',
+        loading:false,
+        showshearch:false,
+        json1:[],
+
     }
 
     async UNSAFE_componentWillMount() {
@@ -28,9 +34,7 @@ class Addcurrency extends Component {
         let data = json
         console.log('student login data', json)
         await this.props.fetchData(data)
-
         let val = []
-
         val = await this.props.Data.data.slice(0, this.props.Data.data.length).map(ele => {
             let obj = {}
             obj.name = ele.name
@@ -41,29 +45,51 @@ class Addcurrency extends Component {
         })
         this.setState({ localdata: val })
     }
-    _Addcryptocurrency = async () => {
+        _Addcryptocurrency = async () => {
+        this.setState({loading:true})
 
         let searchResult = ''
         if (this.state.search == '') {
             SimpleToast.show('Enter the currency name')
+            this.setState({loading:false})
             return;
         }
         else {
             searchResult = this.state.localdata.find(el => el.name == this.state.search)
-
             // checks if given key is available
             if (!searchResult) {
                 SimpleToast.show('Invalid keyword');
+                this.setState({loading:false})
+
                 return;
             }
             const isElementAvailable  = this.props.SavedData.data.find(el => el.name == this.state.search)
             if (isElementAvailable) {
                 SimpleToast.show('Currency already exists');
+                this.setState({loading:false})
+
                 return;
             }
             let data = searchResult
             this.state.localdata == '' ? SimpleToast.show('server error') : this.props.fetchsavedata(data) && this.props.navigation.navigate('Dashboard')
+            this.setState({loading:false})
+
         }
+    }
+    _preditivesearch=(text)=>{
+        debugger
+        if(this.state.search != ''){
+        this.setState({showshearch:true})
+      this.state.json1= this.props.Data.data.filter(el => el.name.includes(text))
+    }else{
+        this.setState({showshearch:false})
+
+    }
+}
+
+    afterclick=()=>{
+
+
     }
     render() {
 
@@ -72,6 +98,9 @@ class Addcurrency extends Component {
 
         return (
             <View>
+
+<Loading isActive={this.state.loading } color={appColor} />
+
                 <SafeAreaView style={{ backgroundColor: newColour }}>
                     <StatusBar backgroundColor={appColor} barStyle="light-content" />
                     <View style={{ flexDirection: 'row', height: HeaderHeigth, alignItems: 'center' }}>
@@ -91,14 +120,39 @@ class Addcurrency extends Component {
                         Add a CrypotoCurreny
                 </Text>
 
+
+
                     <TextInput
                         style={{ borderWidth: 1, borderColor: fontLight, marginHorizontal: 30 * ratio, borderRadius: 5 * ratio, marginTop: 40 * ratio }}
                         placeholder='Use a name or ticket symbol'
 
                         onChangeText={(text) => this.setState({ search: text })}
-                        value={this.state.search}>
+                        value={this.state.search}
+                        onKeyPress={() => this._preditivesearch(this.state.search)}
+
+                        >
 
                     </TextInput>
+                    {
+                    this.state.showshearch &&
+                    <Animated.View style={[Styles.ApplyShadow, { backgroundColor: 'rgba(255,255,255,0.9)', shadowColor: 'rgba(0,0,0,0.5)', top: 0, left: 0, right: 0, padding: 10 * ratio, opacity: this.AnimatedView, alignItems: 'flex-start',borderRadius:5*ratio, height: 100,marginStart:30*ratio,marginEnd:30*ratio }]}>
+                        <FlatList
+                            showsVerticalScrollIndicator={false}
+                            data={this.state.json1}
+                            renderItem={({ item }) =>
+                                <TouchableOpacity style={{ borderBottomWidth: 1 }}
+                                    onPress={() => this.setState({search:item.name})}
+                                    >
+                                    <Text></Text>
+                                    <Text numberOfLines={2} style={[Styles.H5, { color: fontBlack, flex:1 }]}>{item.name}</Text>
+                                    <Text></Text>
+                                </TouchableOpacity>
+                            }
+
+                        />
+                    </Animated.View>
+
+                }
                     <View style={{ alignItems: 'flex-end', marginEnd: 30 * ratio }}>
                         <TouchableOpacity style={{ padding: 5, borderWidth: 1, backgroundColor: appYellow, width: width / 3, height: height / 15, alignItems: "center", marginVertical: 10, borderRadius: 5 * ratio }}
 
